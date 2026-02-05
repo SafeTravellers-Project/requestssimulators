@@ -1,0 +1,156 @@
+pipeline {
+    agent {
+        node {
+            label 'devrequestssimulators'
+        }
+    }
+
+    environment {
+        APP_NAME         = "requestssimulators"
+        MAJOR_RELEASE    = "0.1"
+        DOCKER_TAG       = "${MAJOR_RELEASE}.${env.BUILD_NUMBER}"
+        DOCKER_REG       = "harbor.safetravellers.rid-intrasoft.eu"
+        DOCKER_REPO      = "/requestssimulators/"
+        DOCKER_REG_CREDS = "harbor-creds"
+        COMPOSE_FILE     = "docker-compose.yml"
+    }
+
+    stages {
+        // **************************
+        // *** RUN THE UNIT TESTS ***
+        // **************************
+        stage("Run_Unit_Tests") {
+            steps {
+                echo "***** Running Unit Tests *****"
+                // Build test image
+                sh "docker image build -t ${APP_NAME}:test SourceCode"
+                // Run tests
+                sh "docker container run -e PYTHONPATH=/requestssimulators --name ${APP_NAME}_test --rm ${APP_NAME}:test pytest"
+                // Cleanup
+                sh "docker image rm ${APP_NAME}:test || true"
+            }
+        }
+
+        // *************************
+        // *** IMAGE BUILD STAGE ***
+        // *************************
+        stage("Build_Docker_Images") {
+            steps {
+                echo "***** Building Docker Image (test tag) *****"
+                withEnv(["DOCKER_TAG=test"]) {
+                    sh "docker compose -f ${COMPOSE_FILE} build"
+                }
+            }
+        }
+
+        // **************************************
+        // *** Functional & Integration Tests ***
+        // **************************************
+        stage("Test_the_image") {
+            steps {
+                echo "***** Running Functional Tests *****"
+                withEnv(["DOCKER_TAG=test"]) {
+                    sh "docker compose -f ${COMPOSE_FILE} up -d"
+
+                    // Wait & test service on port 8007
+                    sh '''
+                        HOST_URL=$(hostname -I | awk "{print \$1}")
+                        PORTS=("8007" "8008" "8009")
+
+                        echo "Testing http://${HOST_URL}:8007"
+                        sleep 20
+
+                        for PORT in "${PORTS[@]}"; do
+                            echo "Testing http://${HOST_URL}:${PORT}"
+                            bash jenkins/tests/func_test.sh "${HOST_URL}:${PORT}"
+                        done
+                    '''
+
+                    sh "docker compose -f ${COMPOSE_FILE} down --rmi all"
+                }
+            }
+        }
+
+        // ****************************
+        // *** Push Images In Harbor ***
+        // ****************************
+        stage("Push_Image") {
+            when {
+                environment name: "GIT_BRANCH", value: "origin/master"
+            }
+            steps {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${DOCKER_REG_CREDS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                    echo "***** Push Docker Image *****"
+                    // Build final prod image
+                    sh "docker compose -f ${COMPOSE_FILE} build"
+
+                    // Harbor login
+                    sh "echo "${PASSWORD}" | docker login ${DOCKER_REG} -u "${USERNAME}" --password-stdin"
+
+                    // Push version tag
+                    sh "docker image push ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}"
+
+                    // Push latest tag
+                    withEnv(["DOCKER_TAG=latest"]) {
+                        sh "docker compose -f ${COMPOSE_FILE} build"
+                    }
+                    sh "docker image push ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:latest"
+                }
+            }
+        }
+
+        // ****************************
+        // *** Trivy Scan ***
+        // ****************************
+        stage("Trivy_Scan") {
+            steps {
+                echo "***** Scanning Image in Harbor with Trivy *****"
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_REG_CREDS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+
+                    sh """
+                        export TRIVY_USERNAME=${USERNAME}
+                        export TRIVY_PASSWORD=${PASSWORD}
+                        IMAGE_NAME=${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
+
+                        trivy image --severity CRITICAL,HIGH --ignore-unfixed \$IMAGE_NAME
+                        trivy image --severity CRITICAL,HIGH --format json -o trivy-report.json \$IMAGE_NAME || true
+                    """
+                }
+
+                archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+            }
+        }
+
+        // **************
+        // *** Deploy ***
+        // **************
+        stage("Deployment") {
+            when {
+                environment name: "GIT_BRANCH", value: "origin/master"
+            }
+            steps {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${DOCKER_REG_CREDS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                    echo "***** Deploy Application *****"
+                    sh "echo "${PASSWORD}" | docker login ${DOCKER_REG} -u "${USERNAME}" --password-stdin"
+                    sh "docker compose -f ${COMPOSE_FILE} pull"
+                    sh "docker compose -f ${COMPOSE_FILE} up -d"
+                    sh "docker ps"
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            // slackSend (color: "#FF0000", message: "Job FAILED: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            sh "docker image rm ${APP_NAME}:test &> /dev/null || true"
+            withEnv(["DOCKER_TAG=test"]) {
+                sh "docker compose -f ${COMPOSE_FILE} down --rmi all || true"
+            }
+        }
+
+        // success{
+        //     slackSend (color: "#008000", message: "Job SUCCESSFUL: '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        // }
+    }
+}

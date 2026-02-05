@@ -1,0 +1,27 @@
+pipeline {
+    agent {
+        node {
+            label 'dev01'
+        }
+    }
+    environment {
+        APP_NAME = "dummyrest"
+        DOCKER_REG = "harbor.safetravellers.rid-intrasoft.eu"
+        DOCKER_REPO = "/demo/"
+    }
+
+    stages {
+
+        // ****************
+        // *** KILL APP ***
+        // ****************
+        stage("Kill_Application"){
+            steps {
+                echo "***** Killing Docker Container *****"
+                sh 'docker container rm -f dummyrest'
+                echo "***** Removing Docker Images *****"
+                sh 'docker rmi --force $(docker images -q ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}) || true'
+            }
+        }
+    }
+}

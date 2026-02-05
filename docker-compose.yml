@@ -1,0 +1,38 @@
+version: "3.7"
+services:
+    requestssimulator_interpol:
+        image: ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
+        container_name: ${APP_NAME}_interpol
+        build:
+            context: ./SourceCode
+        ports:
+            - "8007:8007"
+        environment: 
+            PYTHONPATH: /requestssimulators
+        labels:
+            io.portainer.accesscontrol.teams: safetravellers-all
+        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8007", "--access-logfile=-", "app:app"]
+    requestssimulator_ees:
+        image: ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
+        container_name: ${APP_NAME}_ees
+        build:
+            context: ./SourceCode
+        ports:
+            - "8008:8008"
+        environment: 
+            PYTHONPATH: /requestssimulators
+        labels:
+            io.portainer.accesscontrol.teams: safetravellers-all
+        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8008", "--access-logfile=-", "app:app"]
+    requestssimulator_sis:
+        image: ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
+        container_name: ${APP_NAME}_sis
+        build:
+            context: ./SourceCode
+        ports:
+            - "8009:8009"
+        environment: 
+            PYTHONPATH: /requestssimulators
+        labels:
+            io.portainer.accesscontrol.teams: safetravellers-all
+        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8009", "--access-logfile=-", "app:app"]
