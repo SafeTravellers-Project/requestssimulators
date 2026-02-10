@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from requestssimulators.api.v1.health import router as health
-from requestssimulators.api.v1.version import router as version
-from requestssimulators.api.v1.api import documentCheck_router
-from requestssimulators.api.v1.api import nextResultKO_router
+from api.v1.health import router as health
+from api.v1.version import router as version
+from api.v1.api import documentCheck_router
+from api.v1.api import nextResultKO_router
 
 def create_app():
     app = FastAPI()

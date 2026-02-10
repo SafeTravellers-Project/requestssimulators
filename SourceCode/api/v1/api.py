@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from requestssimulators.schemas.inputdata import InputData
+from schemas.inputdata import InputData
 
 documentCheck_router = APIRouter()
 nextResultKO_router = APIRouter()
