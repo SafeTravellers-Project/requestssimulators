@@ -10,16 +10,20 @@ echo $HOST_URL
 # *** Test #1: Check the health API call
 responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/health)
 if [[ ${responseCode} != 200 ]]; then
+    curlCommand = "curl -s -o /dev/null -I -w " + "%{http_code}" + "  " + ${HOST_URL} + "/api/v1/health"
+    echo "curlCommand: $curlCommand"
     echo "Response code: $responseCode"
-    echo "*** Dummyrest API is not running"
+    echo "*** health API is not running"
     exit 1
 fi
 
 # *** Test #2: Check the version API call
 responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/version)
 if [[ ${responseCode} != 200 ]]; then
+    curlCommand = "curl -s -o /dev/null -I -w " + "%{http_code}" + "  " + ${HOST_URL} + "/api/v1/version"
+    echo "curlCommand: $curlCommand"
     echo "Response code: $responseCode"
-    echo "*** Authors API was not found"
+    echo "*** version API was not found"
     exit 1
 fi
 
@@ -29,6 +33,8 @@ INPUT_DATA='{"transactionId" : "transactionid", "docType" : "doctype", "issuingC
 RESPONSE_OK='{"status": "OK"}'
 RECIEVED_DATA=$(curl -XPOST -H "Content-type:Application/json" -d "${INPUT_DATA}"  ${HOST_URL}/api/v1/documentCheck)
 if [[ ${RECIEVED_DATA} != ${RESPONSE_OK} ]]; then
+    echo 'curl -XPOST -H "Content-type:Application/json" -d "${INPUT_DATA}"  ${HOST_URL}/api/v1/documentCheck'
+    echo "RECIEVED_DATA: $RECIEVED_DATA"
     echo "*** documentCheck POST API is not working properly"
     exit 1
 fi
@@ -36,8 +42,9 @@ fi
 # *** Test #4: Check the nextResultKO API call
 responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/nextResultKO)
 if [[ ${responseCode} != 200 ]]; then
+    echo 'curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/nextResultKO'
     echo "Response code: $responseCode"
-    echo "*** Books API was not found"
+    echo "*** nextResultKO API was not found"
     exit 1
 fi
 
