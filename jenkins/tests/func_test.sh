@@ -1,60 +1,123 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# ***********************************************
+# ***        Functional Test Script           ***
+# ***********************************************
 
-# ****************************
-# *** Run Functional tests ***
-# ****************************
+HOST_URL="$1"
 
-HOST_URL=$1
-echo "HOST_URL: " $HOST_URL
+echo ">>> HOST_URL: ${HOST_URL}"
 
-# *** Test #1: Check the health API call
-curlCommand = \"curl -s -o /dev/null -I -w \" + \"%{http_code}\" + \" \" + ${HOST_URL} + \"/api/v1/health\"
-responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/health)
-if [[ ${responseCode} != 200 ]]; then
-    echo "curlCommand: $curlCommand"
-    echo "Response code: $responseCode"
-    echo "*** health API is not running"
+###############################################
+# Test #1: /api/v1/health (GET)
+###############################################
+echo ">>> Test 1: Health API"
+
+responseCode=$(curl -s -o /dev/null -I -w "%{http_code}" "${HOST_URL}/api/v1/health")
+
+if [[ "${responseCode}" != "200" ]]; then
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/health"
+    echo "Response code: ${responseCode}"
+    echo "*** Health API is NOT running"
     exit 1
 fi
 
-# *** Test #2: Check the version API call
-responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/version)
-if [[ ${responseCode} != 200 ]]; then
-    curlCommand = "curl -s -o /dev/null -I -w " + "%{http_code}" + "  " + ${HOST_URL} + "/api/v1/version"
-    echo "curlCommand: $curlCommand"
-    echo "Response code: $responseCode"
-    echo "*** version API was not found"
+echo ">>> Health API OK"
+
+
+###############################################
+# Test #2: /api/v1/version (GET)
+###############################################
+echo ">>> Test 2: Version API"
+
+responseCode=$(curl -s -o /dev/null -I -w "%{http_code}" "${HOST_URL}/api/v1/version")
+
+if [[ "${responseCode}" != "200" ]]; then
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/version"
+    echo "Response code: ${responseCode}"
+    echo "*** Version API was NOT found"
     exit 1
 fi
 
-# *** Test #3: Check the documentCheck POST API
-#INPUT_DATA='{"project": "TERMINET", "wp": 7}'
-INPUT_DATA='{"transactionId" : "transactionid", "docType" : "doctype", "issuingCountry" : "issuingcountry", "lastName" : "lastname", "firstNames" : "firstnames", "docNumber" : "docnumber", "nationality" : "nationality", "birthDate" : "1990-01-01", "gender" : "M", "expirationDate" : "2030-01-01", "personalNumber": ""}'
-RESPONSE_OK='{"status": "OK"}'
-RECIEVED_DATA=$(curl -XPOST -H "Content-type:Application/json" -d "${INPUT_DATA}"  ${HOST_URL}/api/v1/documentCheck)
-if [[ ${RECIEVED_DATA} != ${RESPONSE_OK} ]]; then
-    echo 'curl -XPOST -H "Content-type:Application/json" -d "${INPUT_DATA}"  ${HOST_URL}/api/v1/documentCheck'
-    echo "RECIEVED_DATA: $RECIEVED_DATA"
-    echo "*** documentCheck POST API is not working properly"
+echo ">>> Version API OK"
+
+
+###############################################
+# Test #3: documentCheck (POST)
+###############################################
+echo ">>> Test 3: documentCheck API"
+
+INPUT_DATA='{
+  "transactionId" : "transactionid",
+  "docType"       : "doctype",
+  "issuingCountry": "issuingcountry",
+  "lastName"      : "lastname",
+  "firstNames"    : "firstnames",
+  "docNumber"     : "docnumber",
+  "nationality"   : "nationality",
+  "birthDate"     : "1990-01-01",
+  "gender"        : "M",
+  "expirationDate": "2030-01-01",
+  "personalNumber": ""
+}'
+
+RESPONSE_OK='{"status":"OK"}'
+
+received=$(curl -s -X POST \
+   -H "Content-Type: application/json" \
+   -d "${INPUT_DATA}" \
+   "${HOST_URL}/api/v1/documentCheck")
+
+if [[ "${received}" != "${RESPONSE_OK}" ]]; then
+    echo ">>> curl: curl -XPOST -H \"Content-Type:application/json\" -d \"${INPUT_DATA}\" ${HOST_URL}/api/v1/documentCheck"
+    echo "Received: ${received}"
+    echo "*** documentCheck API did NOT return OK"
     exit 1
 fi
 
-# *** Test #4: Check the nextResultKO API call
-responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/nextResultKO)
-if [[ ${responseCode} != 200 ]]; then
-    echo 'curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/nextResultKO'
-    echo "Response code: $responseCode"
-    echo "*** nextResultKO API was not found"
+echo ">>> documentCheck returned OK"
+
+
+###############################################
+# Test #4: nextResultKO (GET)
+###############################################
+echo ">>> Test 4: nextResultKO API"
+
+responseCode=$(curl -s -o /dev/null -I -w "%{http_code}" "${HOST_URL}/api/v1/nextResultKO")
+
+if [[ "${responseCode}" != "200" ]]; then
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/nextResultKO"
+    echo "Response code: ${responseCode}"
+    echo "*** nextResultKO API not found"
     exit 1
 fi
 
-# *** Test #3: Check the documentCheck POST API
-RESPONSE_KO='{"status": "KO"}'
-RECIEVED_DATA=$(curl -XPOST -H "Content-type:Application/json" -d "${INPUT_DATA}"  ${HOST_URL}/api/v1/documentCheck)
-if [[ ${RECIEVED_DATA} != ${RESPONSE_KO} ]]; then
-    echo "*** documentCheck POST API is not working properly after a nextResultKO API call"
+echo ">>> nextResultKO API OK"
+
+
+###############################################
+# Test #5: documentCheck after KO
+###############################################
+echo ">>> Test 5: documentCheck after KO"
+
+RESPONSE_KO='{"status":"KO"}'
+
+received=$(curl -s -X POST \
+   -H "Content-Type: application/json" \
+   -d "${INPUT_DATA}" \
+   "${HOST_URL}/api/v1/documentCheck")
+
+if [[ "${received}" != "${RESPONSE_KO}" ]]; then
+    echo "Received: ${received}"
+    echo "*** documentCheck API did NOT return KO after nextResultKO"
     exit 1
 fi
 
+echo ">>> documentCheck returned KO as expected"
 
-echo "*** Functional tests were successful ***"
+
+echo "***********************************************"
+echo "***   All Functional Tests PASSED SUCCESS   ***"
+echo "***********************************************"
+
+exit 0
