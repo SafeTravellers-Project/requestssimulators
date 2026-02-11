@@ -55,8 +55,7 @@ pipeline {
                     // Wait & test service on port 8007
                     sh '''#!/usr/bin/env bash
                         HOST_URLS=$(hostname -I | awk "{print \$1}")
-                        #PORTS=("8007" "8008" "8009")
-                        PORTS=("8007")
+                        PORTS=("8007" "8008" "8009")
 
                         for HOST_URL in $HOST_URLS; do
                             echo "Testing http://${HOST_URL}:8007"
