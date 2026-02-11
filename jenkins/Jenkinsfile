@@ -58,9 +58,11 @@ pipeline {
                         PORTS=("8007" "8008" "8009")
 
                         for HOST_URL in $HOST_URLS; do
-                            HOST = HOST_URL
-                            if ":" in $HOST_URL:
-                                HOST = "[${HOST_URL}]"
+                            case "$HOST_URL" in
+                                *:*) HOST="[${HOST_URL}]" ;;
+                                *)   HOST="${HOST_URL}" ;;
+                            esac
+
                             echo "Testing http://${HOST}:8007"
                             sleep 20
 
