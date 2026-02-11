@@ -63,7 +63,6 @@ pipeline {
                                 *)   HOST="${HOST_URL}" ;;
                             esac
 
-                            echo "Testing http://${HOST}:8007"
                             sleep 20
 
                             for PORT in "${PORTS[@]}"; do
