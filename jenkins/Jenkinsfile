@@ -54,16 +54,19 @@ pipeline {
 
                     // Wait & test service on port 8007
                     sh '''#!/usr/bin/env bash
-                        HOST_URL=$(hostname -I | awk "{print \$1}")
+                        HOST_URLS=$(hostname -I | awk "{print \$1}")
                         PORTS=("8007" "8008" "8009")
 
-                        echo "Testing http://${HOST_URL}:8007"
-                        sleep 20
+                        for HOST_URL in $HOST_URLS; do
+                            echo "Testing http://${HOST_URL}:8007"
+                            sleep 20
 
-                        for PORT in "${PORTS[@]}"; do
-                            echo "Testing http://${HOST_URL}:${PORT}"
-                            bash jenkins/tests/func_test.sh "${HOST_URL}:${PORT}"
+                            for PORT in "${PORTS[@]}"; do
+                                echo "Testing http://${HOST_URL}:${PORT}"
+                                bash jenkins/tests/func_test.sh "${HOST_URL}:${PORT}"
+                            done
                         done
+
                     '''
 
                     sh "docker compose -f ${COMPOSE_FILE} down --rmi all"
