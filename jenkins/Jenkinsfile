@@ -58,12 +58,15 @@ pipeline {
                         PORTS=("8007" "8008" "8009")
 
                         for HOST_URL in $HOST_URLS; do
-                            echo "Testing http://${HOST_URL}:8007"
+                            HOST = HOST_URL
+                            if ":" in $HOST_URL:
+                                HOST = "[${HOST_URL}]"
+                            echo "Testing http://${HOST}:8007"
                             sleep 20
 
                             for PORT in "${PORTS[@]}"; do
-                                echo "Testing http://${HOST_URL}:${PORT}"
-                                bash jenkins/tests/func_test.sh "${HOST_URL}:${PORT}"
+                                echo "Testing http://${HOST}:${PORT}"
+                                bash jenkins/tests/func_test.sh "${HOST}:${PORT}"
                             done
                         done
 
