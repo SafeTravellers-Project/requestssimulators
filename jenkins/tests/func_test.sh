@@ -30,7 +30,7 @@ echo ">>> Health API OK"
 ###############################################
 echo ">>> Test 2: Version API"
 
-responseCode=$(curl -s -o /dev/null -I -w "%{http_code}" "${HOST_URL}/api/v1/version")
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/version")
 
 if [[ "${responseCode}" != "200" ]]; then
     echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/version"
@@ -69,7 +69,7 @@ received=$(curl -s -X POST \
    "${HOST_URL}/api/v1/documentCheck")
 
 if [[ "${received}" != "${RESPONSE_OK}" ]]; then
-    echo ">>> curl: curl -XPOST -H \"Content-Type:application/json\" -d \"${INPUT_DATA}\" ${HOST_URL}/api/v1/documentCheck"
+    echo ">>> curl: curl -X POST -H \"Content-Type:application/json\" -d \"${INPUT_DATA}\" ${HOST_URL}/api/v1/documentCheck"
     echo "Received: ${received}"
     echo "*** documentCheck API did NOT return OK"
     exit 1
@@ -83,7 +83,7 @@ echo ">>> documentCheck returned OK"
 ###############################################
 echo ">>> Test 4: nextResultKO API"
 
-responseCode=$(curl -s -o /dev/null -I -w "%{http_code}" "${HOST_URL}/api/v1/nextResultKO")
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/nextResultKO")
 
 if [[ "${responseCode}" != "200" ]]; then
     echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/nextResultKO"
