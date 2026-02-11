@@ -5,12 +5,12 @@
 # ****************************
 
 HOST_URL=$1
-echo $HOST_URL
+echo "HOST_URL: " + $HOST_URL
 
 # *** Test #1: Check the health API call
+curlCommand = "curl -s -o /dev/null -I -w " + "%{http_code}" + "  " + ${HOST_URL} + "/api/v1/health"
 responseCode=$(curl -s -o /dev/null -I -w "%{http_code}"  ${HOST_URL}/api/v1/health)
 if [[ ${responseCode} != 200 ]]; then
-    curlCommand = "curl -s -o /dev/null -I -w " + "%{http_code}" + "  " + ${HOST_URL} + "/api/v1/health"
     echo "curlCommand: $curlCommand"
     echo "Response code: $responseCode"
     echo "*** health API is not running"
