@@ -13,7 +13,7 @@ echo ">>> HOST_URL: ${HOST_URL}"
 ###############################################
 echo ">>> Test 1: Health API"
 
-responseCode=$(curl -s -o /dev/null -I -w "%{http_code}" "${HOST_URL}/api/v1/health")
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/health")
 
 if [[ "${responseCode}" != "200" ]]; then
     echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/health"
