@@ -18,9 +18,9 @@ Deployment on a Docker-based system. The repository includes:
 ## 2. Description of a server
 4 calls can be make to these servers:
 * health (/api/v1/health)
-* version (/api/v1/health)
-* documentCheck (/api/v1/health)
-* nextResultKO (/api/v1/health)
+* version (/api/v1/version)
+* documentCheck (/api/v1/documentCheck)
+* nextResultKO (/api/v1/nextResultKO)
 
 you can see in jenkins/tests/func_test.sh how to make the calls
 Service and session IDs are managed automatically on the server side.
