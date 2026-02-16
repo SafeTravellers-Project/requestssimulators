@@ -1,5 +1,17 @@
 version: "3.7"
 services:
+    redis:
+        image: redis:7-alpine
+        command: ["redis-server", "--appendonly", "yes"]
+        volumes:
+            - redis-data:/data
+        restart: always
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 10
+
     requestssimulator_interpol:
         image: ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
         container_name: ${APP_NAME}_interpol
@@ -9,9 +21,14 @@ services:
             - "8007:8007"
         environment: 
             PYTHONPATH: /requestssimulators
+            REDIS_URL: redis://redis:6379/0
+            SERVICE_ID: interpol
         labels:
             io.portainer.accesscontrol.teams: safetravellers-all
         command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8007", "--access-logfile=-", "app:app"]
+        depends_on:
+            redis:
+                condition: service_healthy
     requestssimulator_ees:
         image: ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
         container_name: ${APP_NAME}_ees
@@ -21,9 +38,14 @@ services:
             - "8008:8008"
         environment: 
             PYTHONPATH: /requestssimulators
+            REDIS_URL: redis://redis:6379/0
+            SERVICE_ID: ees
         labels:
             io.portainer.accesscontrol.teams: safetravellers-all
         command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8008", "--access-logfile=-", "app:app"]
+        depends_on:
+            redis:
+                condition: service_healthy
     requestssimulator_sis:
         image: ${DOCKER_REG}${DOCKER_REPO}${APP_NAME}:${DOCKER_TAG}
         container_name: ${APP_NAME}_sis
@@ -33,6 +55,13 @@ services:
             - "8009:8009"
         environment: 
             PYTHONPATH: /requestssimulators
+            REDIS_URL: redis://redis:6379/0
+            SERVICE_ID: sis
         labels:
             io.portainer.accesscontrol.teams: safetravellers-all
         command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8009", "--access-logfile=-", "app:app"]
+        depends_on:
+            redis:
+                condition: service_healthy
+volumes:
+    redis-data:
