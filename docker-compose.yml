@@ -25,7 +25,7 @@ services:
             SERVICE_ID: interpol
         labels:
             io.portainer.accesscontrol.teams: safetravellers-all
-        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8007", "--access-logfile=-", "app:app"]
+        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8007", "--access-logfile=-", "app:app"]
         depends_on:
             redis:
                 condition: service_healthy
@@ -42,7 +42,7 @@ services:
             SERVICE_ID: ees
         labels:
             io.portainer.accesscontrol.teams: safetravellers-all
-        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8008", "--access-logfile=-", "app:app"]
+        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8008", "--access-logfile=-", "app:app"]
         depends_on:
             redis:
                 condition: service_healthy
@@ -59,7 +59,7 @@ services:
             SERVICE_ID: sis
         labels:
             io.portainer.accesscontrol.teams: safetravellers-all
-        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8009", "--access-logfile=-", "app:app"]
+        command: ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8009", "--access-logfile=-", "app:app"]
         depends_on:
             redis:
                 condition: service_healthy
