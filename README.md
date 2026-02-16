@@ -35,6 +35,8 @@ version call is to check the version.
 ### 2.3 documentCheck call
 documentCheck is to "check" a document.
 The input data are described in SourceCode/schemas/inputdata.py.
+There is a test on the data structure as describe in inputdata.py.
+No field is mandatory but the provided field must be strings.
 It always return {"status": "OK"} until you call nextResultKO then it will return {"status": "KO"} one time.
 
 ### 2.4 nextResultKO call
