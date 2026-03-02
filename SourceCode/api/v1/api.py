@@ -14,6 +14,7 @@ async def documentCheck(data: InputData, request: Request, response: Response):
 
     # get session id
     session_id = request.cookies.get("sid")
+    print("session_id: " + session_id)
     if not session_id:
         # No session → generate or treat as stateless
         session_id = str(uuid4())
