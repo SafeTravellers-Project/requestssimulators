@@ -69,6 +69,9 @@ received=$(curl -s -X POST \
    -d "${INPUT_DATA}" \
    "${HOST_URL}/api/v1/documentCheck")
 
+echo "received:"
+echo "$received"
+
 SESSION_ID=$(echo "$received" | grep -i "X-Session-Id:" | awk '{print $2}' | tr -d '\r')
 body=$(echo "$received" | tail -n 1)
 
