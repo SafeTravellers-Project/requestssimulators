@@ -64,7 +64,7 @@ INPUT_DATA='{
 
 RESPONSE_OK='{"status":"OK"}'
 
-received=$(curl -s -X POST \
+received=$(curl -i -s -X POST \
    -H "Content-Type: application/json" \
    -d "${INPUT_DATA}" \
    "${HOST_URL}/api/v1/documentCheck")
@@ -110,7 +110,7 @@ echo ">>> Test 5: documentCheck after KO"
 
 RESPONSE_KO='{"status":"KO"}'
 
-received=$(curl -s -X POST \
+received=$(curl -i -s -X POST \
    -H "Content-Type: application/json" \
    -H "X-Session-Id: $SESSION_ID" \
    -d "${INPUT_DATA}" \
