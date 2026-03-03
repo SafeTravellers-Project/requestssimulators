@@ -23,8 +23,8 @@ Deployment on a Docker-based system. The repository includes:
 * nextResultKO (/api/v1/nextResultKO)
 
 you can see in jenkins/tests/func_test.sh how to make the calls
-Service and session IDs are managed automatically on the server side.
-This is transparent to the client except for the presence of a cookie for the session id. 
+Server IDs are managed automatically on the server side.
+"**session id**" are genrated and send to the user in the response hearder of a request ("documentCheck" or "nextResultKO")
 
 ### 2.1 health call
 health call is to check if the server is running.
@@ -43,46 +43,40 @@ It always return {"status": "OK"} until you call nextResultKO then it will retur
 nextResultKO is to make documentCheck return {"status": "KO"} one time.
 Each time you need documentCheck to return {"status": "KO"} you have to call nextResultKO before.
 
-### 2.5 session id
+## 3 session id
 To avoid being bothered by other users, the use of a session ID is mandatory.
-The first call to "documentCheck" or "nextResultKO" provides you with a session ID.
+The first call to "documentCheck" or "nextResultKO" provides you with a session ID in the response header.
+If using curl don't forget the option "-i" to be able to see the header of the response and not only its body.
 
-example:
+## 4 example:
+
+### 4.1 first "documentCheck" request
+
+at first request, the user has no "session id", so the request is done without "session id" in the request header.
+
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}"
 
+response header:
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 15
 Connection: keep-alive
 date: Tue, 03 Mar 2026 13:50:15 GMT
 server: uvicorn
-x-session-id: 44f71bb1-c20b-45ab-8035-3a0965edb638
+<mark>x-session-id: 44f71bb1-c20b-45ab-8035-3a0965edb638</mark>
 X-Kong-Upstream-Latency: 2
 X-Kong-Proxy-Latency: 0
 Via: 1.1 kong/3.8.0.0-enterprise-edition
 X-Kong-Request-Id: 8403f735e1b30328f3dffc75951f8c1c
 
+response body:
 {"status":"OK"}
 
-No session id was in the curl command, but the server generated one and that session id can be used in the following commands.
-If using curl don't forget the option "-i" to be able to see the header of the response and not only the body.
+No "session id" was in the curl request, but the server generated one and that "session id" given to the user through the response header can be used in the following commands.
 
-header:
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 15
-Connection: keep-alive
-date: Tue, 03 Mar 2026 13:50:15 GMT
-server: uvicorn
-x-session-id: 44f71bb1-c20b-45ab-8035-3a0965edb638
-X-Kong-Upstream-Latency: 2
-X-Kong-Proxy-Latency: 0
-Via: 1.1 kong/3.8.0.0-enterprise-edition
-X-Kong-Request-Id: 8403f735e1b30328f3dffc75951f8c1c
+This generation of the "session id" by the server could be done by a "nextResultKO" request too.
 
-body:
-{"status":"OK"}
-
+### 4.2 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" -H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"
 
 HTTP/1.1 200 OK
@@ -156,20 +150,20 @@ X-Kong-Request-Id: 8cfce9166a0f30655a0a425c6fc5f563
 {"status":"OK"}
 
 
-## 3. list of servers
+## 5. list of servers
 
-### 3.1 Interpol-SLTD simulator server
+### 5.1 Interpol-SLTD simulator server
 
 https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-interpol
 
-### 3.2 EES simulator server
+### 5.2 EES simulator server
 
 https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-ees
 
-### 3.3 SIS simulator server
+### 5.3 SIS simulator server
 
 https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis
 
-### 3.4 No interference between the servers and the users
+### 5.4 No interference between the servers and the users
 
 The internal use of service id and the use of session id prevent interference between servers and between users. 
