@@ -172,4 +172,4 @@ https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis
 
 ### 3.4 No interference between the servers and the users
 
-The internal use of service id and the use of session id allow prevents interference between servers and between users. 
+The internal use of service id and the use of session id prevent interference between servers and between users. 
