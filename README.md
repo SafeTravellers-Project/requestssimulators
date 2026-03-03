@@ -49,6 +49,7 @@ The first call to "documentCheck" or "nextResultKO" provides you with a session 
 
 example:
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}"
+
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 15
@@ -83,6 +84,7 @@ body:
 {"status":"OK"}
 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" -H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"
+
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 15
@@ -103,6 +105,7 @@ Once you use a session id, there is virtually no chance that another person will
 Both "documentCheck" and "nextResultKO" will generate a new session id if no session id is provided in the request.
 
 * curl -i -X GET https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/nextResultKO -H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"
+
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 15
@@ -121,6 +124,7 @@ As the session id is provided in the command, the session id in the response hea
 And even if someone send other requests to the same server, there will be no interference with your requests.
 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" -H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"
+
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 15
@@ -136,6 +140,7 @@ X-Kong-Request-Id: 4309193bb48b06476f89936ad48f8968
 {"status":"KO"}
 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" -H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"
+
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 15
