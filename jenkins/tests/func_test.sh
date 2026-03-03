@@ -14,10 +14,10 @@ echo ">>> HOST_URL: ${HOST_URL}"
 ###############################################
 echo ">>> Test 1: Health API"
 
-responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/health" -c cookiejar.txt -b cookiejar.txt)
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/health")
 
 if [[ "${responseCode}" != "200" ]]; then
-    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/health -c cookiejar.txt -b cookiejar.txt"
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/health"
     echo "Response code: ${responseCode}"
     echo "*** Health API is NOT running"
     exit 1
@@ -31,10 +31,10 @@ echo ">>> Health API OK"
 ###############################################
 echo ">>> Test 2: Version API"
 
-responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/version" -c cookiejar.txt -b cookiejar.txt)
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/version")
 
 if [[ "${responseCode}" != "200" ]]; then
-    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/version -c cookiejar.txt -b cookiejar.txt"
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/version"
     echo "Response code: ${responseCode}"
     echo "*** Version API was NOT found"
     exit 1
@@ -67,15 +67,19 @@ RESPONSE_OK='{"status":"OK"}'
 received=$(curl -s -X POST \
    -H "Content-Type: application/json" \
    -d "${INPUT_DATA}" \
-   "${HOST_URL}/api/v1/documentCheck" -c cookiejar.txt -b cookiejar.txt)
+   "${HOST_URL}/api/v1/documentCheck")
 
-if [[ "${received}" != "${RESPONSE_OK}" ]]; then
-    echo ">>> curl: curl -X POST -H \"Content-Type:application/json\" -d \"${INPUT_DATA}\" ${HOST_URL}/api/v1/documentCheck -c cookiejar.txt -b cookiejar.txt"
+SESSION_ID=$(echo "$received" | grep -i "X-Session-Id:" | awk '{print $2}' | tr -d '\r')
+body=$(echo "$received" | tail -n 1)
+
+if [[ "${body}" != "${RESPONSE_OK}" ]]; then
+    echo ">>> curl: curl -X POST -H \"Content-Type:application/json\" -d \"${INPUT_DATA}\" ${HOST_URL}/api/v1/documentCheck"
     echo "Received: ${received}"
     echo "*** documentCheck API did NOT return OK"
     exit 1
 fi
 
+echo "SESSION_ID = $SESSION_ID"
 echo ">>> documentCheck returned OK"
 
 
@@ -84,10 +88,10 @@ echo ">>> documentCheck returned OK"
 ###############################################
 echo ">>> Test 4: nextResultKO API"
 
-responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/nextResultKO" -c cookiejar.txt -b cookiejar.txt)
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Session-Id: $SESSION_ID" "${HOST_URL}/api/v1/nextResultKO")
 
 if [[ "${responseCode}" != "200" ]]; then
-    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/nextResultKO -c cookiejar.txt -b cookiejar.txt"
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" -H \"X-Session-Id: $SESSION_ID\" ${HOST_URL}/api/v1/nextResultKO"
     echo "Response code: ${responseCode}"
     echo "*** nextResultKO API not found"
     exit 1
@@ -105,10 +109,13 @@ RESPONSE_KO='{"status":"KO"}'
 
 received=$(curl -s -X POST \
    -H "Content-Type: application/json" \
+   -H "X-Session-Id: $SESSION_ID" \
    -d "${INPUT_DATA}" \
-   "${HOST_URL}/api/v1/documentCheck" -c cookiejar.txt -b cookiejar.txt)
+   "${HOST_URL}/api/v1/documentCheck")
 
-if [[ "${received}" != "${RESPONSE_KO}" ]]; then
+body=$(echo "$received" | tail -n 1)
+
+if [[ "${body}" != "${RESPONSE_KO}" ]]; then
     echo "Received: ${received}"
     echo "*** documentCheck API did NOT return KO after nextResultKO"
     exit 1
