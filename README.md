@@ -121,7 +121,7 @@ X-Kong-Request-Id: c927480d0f3abc1ef1adb21decdcee11
 {"status":"OK"}
 
 As the session id is provided in the command, the session id in the response header is the same.
-And even if someone send other requests to the same server, there will be no interference with your requests.
+Even if someone send other requests to the same server, there will be no interference with your requests.
 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" -H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"
 
