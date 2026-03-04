@@ -1,15 +1,15 @@
 from pydantic import BaseModel
 
 class InputData(BaseModel):
-    transactionId: str
-    docType: str
-    issuingCountry: str
-    lastName: str
-    firstNames: str
-    docNumber: str
-    nationality: str
-    birthDate: str
-    gender: str
-    expirationDate: str
-    personalNumber: str
+    transactionId: str = None
+    docType: str = None
+    issuingCountry: str = None
+    lastName: str = None
+    firstNames: str = None
+    docNumber: str = None
+    nationality: str = None
+    birthDate: str = None
+    gender: str = None
+    expirationDate: str = None
+    personalNumber: str = None
 
