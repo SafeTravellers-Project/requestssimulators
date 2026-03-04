@@ -64,7 +64,8 @@ INPUT_DATA='{
 
 RESPONSE_OK='{"status":"OK"}'
 
-SESSION_ID="sdgsg-ertdfbrg-dftrhns"
+SESSION_ID="abcde-fghijklmnopq-rstuv"
+echo "send SESSION_ID = $SESSION_ID"
 
 received=$(curl -i -s -X POST \
    -H "Content-Type: application/json" \
@@ -76,6 +77,7 @@ echo "received:"
 echo "$received"
 
 SESSION_ID=$(echo "$received" | grep -i "X-Session-Id:" | awk '{print $2}' | tr -d '\r')
+echo "received SESSION_ID = $SESSION_ID"
 body=$(echo "$received" | tail -n 1)
 
 if [[ "${body}" != "${RESPONSE_OK}" ]]; then
