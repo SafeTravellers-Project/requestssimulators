@@ -1,6 +1,6 @@
-# requests simulators for Interpol SLTD, SISII, EES
+# requests simulators for Interpol SLTD, SIS II, EES
 
-Python-based application that creates servers simumaltors for requests to Interpol SLTD, SISII, EES servers.  
+Python-based application that creates servers simumaltors for requests to Interpol SLTD, SIS II, EES servers.  
 Each servers is multi-users and can be called seperately from the others.  
 Each server has the same capabilities.  
 
