@@ -26,28 +26,31 @@ you can see in jenkins/tests/func_test.sh how to make the calls.
 Server IDs are managed automatically on the server side.  
 **session id** are genrated and send to the user in the response hearder of a request (**documentCheck** or **nextResultKO**)
 
-### 2.1 health call
-**health** call is to check if the server is running.
+### 2.1 health request
+The **health** request is to check if the server is running. (no **session id** involved)
 
-### 2.2 version call
-**version** call is to check the version.
+### 2.2 version request
+The **version** request is to check the version. (no **session id** involved)
 
-### 2.3 documentCheck call
-**documentCheck** is to check a document.  
+### 2.3 documentCheck request
+The **documentCheck** is to check a document.  
 The input data are described in SourceCode/schemas/inputdata.py.  
 There is a test on the data structure as describe in inputdata.py.  
 No field is mandatory but the provided field must be strings.  
-It always return a **session id** in the response header, this **session id** is a new one if none was provided in the request header.  
-It always return **{"status": "OK"}** until you call **nextResultKO** then it will return **{"status": "KO"}** one time.  
+A **session id** is mandatory in the request header.  
+It always return the same **session id** in the response header than the one in the request header.  
+It always return **{"status": "OK"}** until the **nextResultKO** request has been send then it will return **{"status": "KO"}** one time.  
 
-### 2.4 nextResultKO call
-**nextResultKO** is to make **documentCheck** return **{"status": "KO"}** one time.  
-Each time you need **documentCheck** to return **{"status": "KO"}** you have to call **nextResultKO** before.  
+### 2.4 nextResultKO request
+The **nextResultKO** request is to make the next **documentCheck** request return **{"status": "KO"}** one time. (no **session id** involved)  
+Each time you need the next **documentCheck** request to return **{"status": "KO"}** you have to send the **nextResultKO** request before.  
 It always return a **session id** in the response header, this **session id** is a new one if none was provided in the request header.  
+A **nextResultKO** request made on a server will not impact another server (Interpol SLTD, EES, SIS II).  
 
 ## 3 session id
-To avoid being bothered by other users, the use of a **session id** is mandatory.  
-The first call to **documentCheck** or **nextResultKO** provides you with a **session id** in the response header.  
+Unlike a standard server where the **session id** is there to avoid multi-users problems, here the session ID is managed by the client.  
+The use of a **session id** is mandatory only for the **documentCheck** request.
+the **session id** is provided by the client in the request header and the server response contains the **session id** in the response header.  
 If using curl, don't forget the option "**-i**" to be able to see the response header and not only its body.  
 
 ## 4 example:
@@ -56,7 +59,7 @@ If using curl, don't forget the option "**-i**" to be able to see the response h
 
 at first request, the user has no **session id**, so the request is done without **session id** in the request header.  
 
-* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}"  
+* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:44f71bb1-c20b-45ab-8035-3a0965edb638"</mark>  
 
 response header:  
 HTTP/1.1 200 OK  
@@ -74,9 +77,7 @@ X-Kong-Request-Id: 8403f735e1b30328f3dffc75951f8c1c
 response body:  
 {"status":"OK"}  
 
-No **session id** was in the curl request, but the server generated one and that **session id** is given to the user through the response header and can be used in the following commands.  
-
-This generation of the **session id** by the server could be done by a **nextResultKO** request too.  
+The **session id** present in the curl request header, is also present in the response header.  
 
 ### 4.2 second "documentCheck" request
 
@@ -98,14 +99,11 @@ X-Kong-Request-Id: fd2eae68e946d23cfe9ef22c6b888e77
 response body:  
 {"status":"OK"}  
 
-This time the **session id** provided by the previous command is used and putted in the request header.  
-Once you use a **session id**, there is virtually no chance that another person will use the same **session id* and cause inconsistencies in your requests/responses.  
-
-Both **documentCheck** and **nextResultKO** will generate a new **session id** if none is provided in the request.    
+Same thing than previous command. The **session id** provided in the request header can be found in the response header.  
 
 ### 4.3 "nextResultKO" request
 
-* curl -i -X GET https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/nextResultKO <mark>-H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"</mark>  
+* curl -i -X GET https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/nextResultKO  
 
 response header:  
 HTTP/1.1 200 OK  
@@ -114,7 +112,6 @@ Content-Length: 15
 Connection: keep-alive  
 date: Tue, 03 Mar 2026 14:05:16 GMT  
 server: uvicorn  
-<mark>x-session-id: 59883558-e6c1-4c76-8b40-f1a40bf98abe</mark>  
 X-Kong-Upstream-Latency: 3  
 X-Kong-Proxy-Latency: 0  
 Via: 1.1 kong/3.8.0.0-enterprise-edition  
@@ -123,12 +120,11 @@ X-Kong-Request-Id: c927480d0f3abc1ef1adb21decdcee11
 response body:  
 {"status":"OK"}  
 
-As the **session id** is provided in the requst, the **session id** in the response header is the same.  
-Even if someone send other requests to the same server, there will be no interference with your requests because he's not using the same **session id**.  
+This request is not related to any **session id**, so the next **documentCheck** request with any **session id** will return **{"status":"KO"}**.  
 
 ### 4.3 "documentCheck" request after a "nextResultKO" request
 
-* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"</mark>  
+* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:cde5fb65-9d28-722b-0b7a-eb51d45aa350"</mark>  
 
 response header:  
 HTTP/1.1 200 OK  
@@ -137,7 +133,7 @@ Content-Length: 15
 Connection: keep-alive  
 date: Tue, 03 Mar 2026 14:06:13 GMT  
 server: uvicorn  
-<mark>x-session-id: 59883558-e6c1-4c76-8b40-f1a40bf98abe</mark>  
+<mark>x-session-id: cde5fb65-9d28-722b-0b7a-eb51d45aa350</mark>  
 X-Kong-Upstream-Latency: 2  
 X-Kong-Proxy-Latency: 1  
 Via: 1.1 kong/3.8.0.0-enterprise-edition  
@@ -150,7 +146,7 @@ response body:
 
 ### 4.3 "documentCheck" request after a "documentCheck" request
 
-* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:59883558-e6c1-4c76-8b40-f1a40bf98abe"</mark>  
+* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:63251947-d31b-dc55-2c1d-2a30bf185d4"</mark>  
 
 response header:  
 HTTP/1.1 200 OK  
@@ -159,7 +155,7 @@ Content-Length: 15
 Connection: keep-alive  
 date: Tue, 03 Mar 2026 14:07:20 GMT  
 server: uvicorn  
-<mark>x-session-id: 59883558-e6c1-4c76-8b40-f1a40bf98abe</mark>  
+<mark>x-session-id: 63251947-d31b-dc55-2c1d-2a30bf185d4</mark>  
 X-Kong-Upstream-Latency: 2  
 X-Kong-Proxy-Latency: 1  
 Via: 1.1 kong/3.8.0.0-enterprise-edition  
@@ -171,7 +167,7 @@ response body:
 
 ## 5. list of servers
 
-### 5.1 Interpol-SLTD simulator server
+### 5.1 Interpol SLTD simulator server
 
 https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-interpol
 
@@ -179,10 +175,10 @@ https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-interpol
 
 https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-ees
 
-### 5.3 SIS simulator server
+### 5.3 SIS II simulator server
 
 https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis
 
-### 5.4 No interference between the servers and the users
+### 5.4 No interference between the servers
 
-The internal use of service id and the use of session id prevent interference between servers and between users. 
+The internal use of service id prevent interference between servers.  
