@@ -64,8 +64,11 @@ INPUT_DATA='{
 
 RESPONSE_OK='{"status":"OK"}'
 
+SESSION_ID="sdgsg-ertdfbrg-dftrhns"
+
 received=$(curl -i -s -X POST \
    -H "Content-Type: application/json" \
+   -H "X-Session-Id: $SESSION_ID" \
    -d "${INPUT_DATA}" \
    "${HOST_URL}/api/v1/documentCheck")
 
@@ -91,10 +94,10 @@ echo ">>> documentCheck returned OK"
 ###############################################
 echo ">>> Test 4: nextResultKO API"
 
-responseCode=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Session-Id: $SESSION_ID" "${HOST_URL}/api/v1/nextResultKO")
+responseCode=$(curl -s -o /dev/null -w "%{http_code}" "${HOST_URL}/api/v1/nextResultKO")
 
 if [[ "${responseCode}" != "200" ]]; then
-    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" -H \"X-Session-Id: $SESSION_ID\" ${HOST_URL}/api/v1/nextResultKO"
+    echo "curlCommand: curl -s -o /dev/null -I -w \"%{http_code}\" ${HOST_URL}/api/v1/nextResultKO"
     echo "Response code: ${responseCode}"
     echo "*** nextResultKO API not found"
     exit 1
