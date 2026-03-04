@@ -122,7 +122,7 @@ response body:
 
 This request is not related to any **session id**, so the next **documentCheck** request with any **session id** will return **{"status":"KO"}**.  
 
-### 4.3 "documentCheck" request after a "nextResultKO" request
+### 4.4 "documentCheck" request after a "nextResultKO" request
 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:cde5fb65-9d28-722b-0b7a-eb51d45aa350"</mark>  
 
@@ -144,7 +144,7 @@ response body:
 
 **{"status":"KO"}** is the response when a **documentCheck** request is made after a **nextResultKO** request.  
 
-### 4.3 "documentCheck" request after a "documentCheck" request
+### 4.5 "documentCheck" request after a "documentCheck" request
 
 * curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-sis/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\", \"docType\" : \"doctype\", \"issuingCountry\" : \"issuingcountry\", \"lastName\" : \"lastname\", \"firstNames\" : \"firstnames\", \"docNumber\" : \"docnumber\", \"nationality\" : \"nationality\", \"birthDate\" : \"1990-01-01\", \"gender\" : \"M\", \"expirationDate\" : \"2030-01-01\", \"personalNumber\": \"\"}" <mark>-H "X-Session-Id:63251947-d31b-dc55-2c1d-2a30bf185d4"</mark>  
 
@@ -164,6 +164,24 @@ X-Kong-Request-Id: 8cfce9166a0f30655a0a425c6fc5f563
 response body:  
 {"status":"OK"}  
 
+### 4.6 "documentCheck" request without session id
+
+* curl -i -X POST https://platform.safetravellers.rid-intrasoft.eu/requestssimulators-ees/api/v1/documentCheck -H "Content-Type: application/json" -d "{\"transactionId\" : \"transactionid\"}"
+
+response header:  
+HTTP/1.1 200 OK  
+Content-Type: application/json  
+Content-Length: 45  
+Connection: keep-alive  
+date: Wed, 04 Mar 2026 14:15:04 GMT  
+server: uvicorn  
+X-Kong-Upstream-Latency: 5  
+X-Kong-Proxy-Latency: 0  
+Via: 1.1 kong/3.8.0.0-enterprise-edition  
+X-Kong-Request-Id: b410fc691a926729ccdb740f4949d518  
+
+response body:  
+{"status":"error","msg":"missing session id"}  
 
 ## 5. list of servers
 
