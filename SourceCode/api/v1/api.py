@@ -29,7 +29,7 @@ async def documentCheck(data: InputData, request: Request, response: Response):
     # get session id
     session_id = get_or_create_session_id(request, response)
     if session_id == "":
-        return {"status": "error", "msg" : ""}
+        return {"status": "error", "msg" : "missing session id"}
 
     # this request to have KO in the result is for any request for this service
     # independently of the session id
